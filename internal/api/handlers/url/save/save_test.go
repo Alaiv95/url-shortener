@@ -42,7 +42,7 @@ func TestAPI_Save(t *testing.T) {
 		Url: "http://google.com",
 	}
 	payload, _ := json.Marshal(data)
-	h := save.New(log, saver, &cfg.Http)
+	h := save.New(log, saver)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/url", bytes.NewBuffer(payload))
 

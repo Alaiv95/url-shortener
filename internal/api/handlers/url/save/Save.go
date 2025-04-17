@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"urlShortener/internal/api/handlers"
 	"urlShortener/internal/api/handlers/url"
-	"urlShortener/internal/config"
 	"urlShortener/internal/lib/base62"
 	"urlShortener/internal/lib/numGen"
 )
@@ -22,7 +21,7 @@ type UrlSaver interface {
 }
 
 // New конструктор для иницализации хендлера сохранения ссылки
-func New(log *slog.Logger, saver UrlSaver, cfg *config.HttpServer) http.HandlerFunc {
+func New(log *slog.Logger, saver UrlSaver) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req UrlReq
 
