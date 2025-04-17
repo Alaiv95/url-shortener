@@ -26,21 +26,19 @@ func (db *Storage) SaveUrl(origUrl string, shortUrl string) (string, error) {
 		return "", fmt.Errorf(storage.UrlNotProvidedError)
 	}
 
-	if _, ok := db.data[origUrl]; ok {
+	if _, ok := db.data[shortUrl]; ok {
 		return "", fmt.Errorf(storage.UrlExistsError)
 	}
 
-	db.data[origUrl] = shortUrl
+	db.data[shortUrl] = origUrl
 
 	return shortUrl, nil
 }
 
 // GetUrl получение оригинальной ссылки по короткой
 func (db *Storage) GetUrl(shortUrl string) (string, error) {
-	for u, su := range db.data {
-		if su == shortUrl {
-			return u, nil
-		}
+	if u, ok := db.data[shortUrl]; ok {
+		return u, nil
 	}
 
 	return "", fmt.Errorf(storage.UrlNotFoundError)

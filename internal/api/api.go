@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/gorilla/mux"
 	"log/slog"
-	"urlShortener/internal/api/handlers/url/original"
+	"urlShortener/internal/api/handlers/url/redirect"
 	"urlShortener/internal/api/handlers/url/save"
 	"urlShortener/internal/api/mw"
 	"urlShortener/internal/config"
@@ -40,5 +40,5 @@ func (a *API) Middlewares() {
 // Endpoints подключение всех хендлеров
 func (a *API) Endpoints() {
 	a.Router.Handle("/api/v1/url", save.New(a.log, a.db, a.cfg)).Methods("POST")
-	a.Router.HandleFunc("/api/v1/url/original", original.New(a.log, a.db)).Methods("GET")
+	a.Router.HandleFunc("/api/v1/url/{slug}", redirect.New(a.log, a.db)).Methods("GET")
 }

@@ -2,7 +2,6 @@ package save
 
 import (
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"urlShortener/internal/api/handlers"
@@ -35,11 +34,10 @@ func New(log *slog.Logger, saver UrlSaver, cfg *config.HttpServer) http.HandlerF
 		}
 
 		slug := base62.ConvertNum(numGen.Generate())
-		shortUrl := fmt.Sprintf("%s/%s", cfg.Address, slug)
 
-		resp, err := saver.SaveUrl(req.Url, shortUrl)
+		resp, err := saver.SaveUrl(req.Url, slug)
 		if err != nil {
-			log.Error("Error saving link", "err", err.Error())
+			log.Error("Error saving url", "err", err.Error())
 			handlers.WriteRespJson(w, handlers.Err(err.Error()), http.StatusBadRequest)
 			return
 		}

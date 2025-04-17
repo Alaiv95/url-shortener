@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"regexp"
 	"testing"
 	"urlShortener/internal/api/handlers/url"
 	"urlShortener/internal/api/handlers/url/save"
@@ -60,8 +59,7 @@ func TestAPI_Save(t *testing.T) {
 		t.Errorf("ошибка при десериализации ответа")
 	}
 
-	matchString, err := regexp.MatchString("^test/.+$", resp.Url)
-	if err != nil || !matchString {
-		t.Errorf("url неверен: получили %s, а хотели %s", rr.Body, "test/?")
+	if err != nil || resp.Url == "" {
+		t.Errorf("url неверен: получили %s, а хотели %s", rr.Body, "?")
 	}
 }

@@ -1,10 +1,10 @@
-package original
+package redirect
 
 import (
+	"github.com/gorilla/mux"
 	"log/slog"
 	"net/http"
 	"urlShortener/internal/api/handlers"
-	"urlShortener/internal/api/handlers/url"
 )
 
 // UrlGetter интерфейс для получения ссылки
@@ -12,10 +12,11 @@ type UrlGetter interface {
 	GetUrl(shortUrl string) (string, error)
 }
 
-// New конструктор для создания хендлера на получение оригинального url по короткому
+// New конструктор для создания хендлера для редиректа с короткой ссылки на оригинальную
 func New(log *slog.Logger, db UrlGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		shortUrl := r.URL.Query().Get("url")
+		vars := mux.Vars(r)
+		shortUrl := vars["slug"]
 
 		origUrl, err := db.GetUrl(shortUrl)
 
@@ -25,6 +26,6 @@ func New(log *slog.Logger, db UrlGetter) http.HandlerFunc {
 			return
 		}
 
-		url.ResponseOk(w, origUrl, http.StatusOK)
+		http.Redirect(w, r, origUrl, http.StatusFound)
 	}
 }
