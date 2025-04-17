@@ -19,7 +19,12 @@ type API struct {
 	db     storage.Storage
 }
 
-type SaveLinkReq struct {
+type SaveUrlReq struct {
+	Url string `json:"url" validate:"required,url"`
+}
+
+type UrlResp struct {
+	Response
 	Url string `json:"url"`
 }
 
@@ -42,30 +47,29 @@ func (a *API) Endpoints() {
 }
 
 func (a *API) Original(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	shortUrl := r.URL.Query().Get("url")
 
 	origUrl, err := a.db.OrigUrl(shortUrl)
+
 	if err != nil {
 		a.log.Error("Error getting url", "err", err.Error())
-		w.WriteHeader(http.StatusNotFound)
+		WriteResp(w, Err(err.Error()), http.StatusBadRequest)
+		return
 	}
 
-	write, err := w.Write([]byte(origUrl))
-	if err != nil {
-		a.log.Error("Error writing response", "err", err.Error())
-		http.Error(w, "Unknown error occurred", http.StatusInternalServerError)
-	}
-
-	a.log.Info("Wrote response bytes", "amount", write)
+	responseOk(w, origUrl, http.StatusOK)
 }
 
 func (a *API) Save(w http.ResponseWriter, r *http.Request) {
-	var req SaveLinkReq
+	w.Header().Set("Content-Type", "application/json")
+	var req SaveUrlReq
 
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		a.log.Error("Error decoding json")
-		http.Error(w, "Invalid json provided", http.StatusBadRequest)
+		WriteResp(w, Err(err.Error()), http.StatusBadRequest)
+		return
 	}
 
 	slug := base62.ConvertNum(numGen.Generate())
@@ -74,14 +78,18 @@ func (a *API) Save(w http.ResponseWriter, r *http.Request) {
 	resp, err := a.db.SaveUrl(req.Url, shortUrl)
 	if err != nil {
 		a.log.Error("Error saving link", "err", err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		WriteResp(w, Err(err.Error()), http.StatusBadRequest)
+		return
 	}
 
-	write, err := w.Write([]byte(resp))
-	if err != nil {
-		a.log.Error("Error writing response", "err", err.Error())
-		http.Error(w, "Unknown error occurred", http.StatusInternalServerError)
+	responseOk(w, resp, http.StatusOK)
+}
+
+func responseOk(w http.ResponseWriter, url string, status int) {
+	r := UrlResp{
+		Response: Ok(),
+		Url:      url,
 	}
 
-	a.log.Info("Wrote response bytes", "amount", write)
+	WriteResp(w, r, status)
 }

@@ -2,7 +2,6 @@ package server
 
 import (
 	"log/slog"
-	"net"
 	"net/http"
 	"os"
 	"urlShortener/internal/api"
@@ -35,15 +34,9 @@ func (s *Server) Start() {
 		Handler:      s.api.Router,
 	}
 
-	lis, err := net.Listen("tcp4", s.cfg.Address)
-	if err != nil {
-		s.log.Error("Error starting server", "error", err.Error())
-		os.Exit(1)
-	}
-
 	s.log.Info("Starting server. Will listen on " + s.cfg.Address + "...")
 
-	err = server.Serve(lis)
+	err := server.ListenAndServe()
 	if err != nil {
 		s.log.Error("Error serving server", "error", err.Error())
 		os.Exit(1)

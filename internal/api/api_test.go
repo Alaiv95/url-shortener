@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"log/slog"
 	"net/http"
@@ -38,7 +37,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestAPI_Save(t *testing.T) {
-	data := SaveLinkReq{
+	data := SaveUrlReq{
 		Url: "http://google.com",
 	}
 	payload, _ := json.Marshal(data)
@@ -52,9 +51,15 @@ func TestAPI_Save(t *testing.T) {
 		t.Errorf("код неверен: получили %d, а хотели %d", rr.Code, http.StatusOK)
 	}
 
-	matchString, err := regexp.MatchString("^test/.+$", rr.Body.String())
+	var resp UrlResp
+	err := json.Unmarshal(rr.Body.Bytes(), &resp)
+	if err != nil {
+		t.Errorf("ошибка при десериализации ответа")
+	}
+
+	matchString, err := regexp.MatchString("^test/.+$", resp.Url)
 	if err != nil || !matchString {
-		t.Errorf("url неверен: получили %s, а хотели %s", rr.Body, "test/...")
+		t.Errorf("url неверен: получили %s, а хотели %s", rr.Body, "test/?")
 	}
 }
 
@@ -62,7 +67,7 @@ func TestAPI_Original(t *testing.T) {
 	const url = "http://yandex.ru"
 	const shortUrl = "test/2"
 
-	saveUrl, err := a.db.SaveUrl(url, shortUrl)
+	_, err := a.db.SaveUrl(url, shortUrl)
 	if err != nil {
 		t.Errorf("ошибка при подготовке данных")
 	}
@@ -79,5 +84,13 @@ func TestAPI_Original(t *testing.T) {
 		t.Errorf("код неверен: получили %d, а хотели %d", rr.Code, http.StatusOK)
 	}
 
-	fmt.Println(rr.Body.String(), saveUrl)
+	var resp UrlResp
+	err = json.Unmarshal(rr.Body.Bytes(), &resp)
+	if err != nil {
+		t.Errorf("ошибка при десериализации ответа")
+	}
+
+	if url != resp.Url {
+		t.Errorf("url неверен: получили %s, а хотели %s", resp.Url, url)
+	}
 }
