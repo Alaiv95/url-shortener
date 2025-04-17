@@ -4,13 +4,13 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"urlShortener/internal/api"
+	"urlShortener/internal/api/url"
 	"urlShortener/internal/config"
 	"urlShortener/internal/storage"
 )
 
 type Server struct {
-	api *api.API
+	api *url.API
 	cfg *config.HttpServer
 	log *slog.Logger
 	db  storage.Storage
@@ -19,7 +19,7 @@ type Server struct {
 func New(db storage.Storage, cfg *config.HttpServer, log *slog.Logger) *Server {
 	return &Server{
 		db:  db,
-		api: api.New(db, cfg, log),
+		api: url.New(db, cfg, log),
 		cfg: cfg,
 		log: log,
 	}

@@ -1,4 +1,4 @@
-package api
+package url
 
 import (
 	"encoding/json"
@@ -6,6 +6,8 @@ import (
 	"github.com/gorilla/mux"
 	"log/slog"
 	"net/http"
+	"urlShortener/internal/api"
+	"urlShortener/internal/api/mw"
 	"urlShortener/internal/config"
 	"urlShortener/internal/lib/base62"
 	"urlShortener/internal/lib/numGen"
@@ -24,7 +26,7 @@ type SaveUrlReq struct {
 }
 
 type UrlResp struct {
-	Response
+	api.Response
 	Url string `json:"url"`
 }
 
@@ -36,9 +38,14 @@ func New(db storage.Storage, cfg *config.HttpServer, log *slog.Logger) *API {
 		log:    log,
 	}
 
+	api.Middlewares()
 	api.Endpoints()
 
 	return api
+}
+
+func (a *API) Middlewares() {
+	a.Router.Use(mw.HeadersMiddleware)
 }
 
 func (a *API) Endpoints() {
@@ -47,14 +54,13 @@ func (a *API) Endpoints() {
 }
 
 func (a *API) Original(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	shortUrl := r.URL.Query().Get("url")
 
 	origUrl, err := a.db.OrigUrl(shortUrl)
 
 	if err != nil {
 		a.log.Error("Error getting url", "err", err.Error())
-		WriteResp(w, Err(err.Error()), http.StatusBadRequest)
+		api.WriteResp(w, api.Err(err.Error()), http.StatusBadRequest)
 		return
 	}
 
@@ -62,13 +68,12 @@ func (a *API) Original(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *API) Save(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 	var req SaveUrlReq
 
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		a.log.Error("Error decoding json")
-		WriteResp(w, Err(err.Error()), http.StatusBadRequest)
+		api.WriteResp(w, api.Err(err.Error()), http.StatusBadRequest)
 		return
 	}
 
@@ -78,7 +83,7 @@ func (a *API) Save(w http.ResponseWriter, r *http.Request) {
 	resp, err := a.db.SaveUrl(req.Url, shortUrl)
 	if err != nil {
 		a.log.Error("Error saving link", "err", err.Error())
-		WriteResp(w, Err(err.Error()), http.StatusBadRequest)
+		api.WriteResp(w, api.Err(err.Error()), http.StatusBadRequest)
 		return
 	}
 
@@ -87,9 +92,9 @@ func (a *API) Save(w http.ResponseWriter, r *http.Request) {
 
 func responseOk(w http.ResponseWriter, url string, status int) {
 	r := UrlResp{
-		Response: Ok(),
+		Response: api.Ok(),
 		Url:      url,
 	}
 
-	WriteResp(w, r, status)
+	api.WriteResp(w, r, status)
 }
