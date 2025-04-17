@@ -4,27 +4,30 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"urlShortener/internal/api/url"
+	"urlShortener/internal/api"
 	"urlShortener/internal/config"
-	"urlShortener/internal/storage"
+	"urlShortener/internal/storage/memdb"
 )
 
+// Server структура сервера
 type Server struct {
-	api *url.API
+	api *api.API
 	cfg *config.HttpServer
 	log *slog.Logger
-	db  storage.Storage
+	db  *memdb.Storage
 }
 
-func New(db storage.Storage, cfg *config.HttpServer, log *slog.Logger) *Server {
+// New конструктор иницализации сервера с его зависимостями
+func New(db *memdb.Storage, cfg *config.HttpServer, log *slog.Logger) *Server {
 	return &Server{
 		db:  db,
-		api: url.New(db, cfg, log),
+		api: api.New(db, cfg, log),
 		cfg: cfg,
 		log: log,
 	}
 }
 
+// Start запуск сервера с настройками из конфига
 func (s *Server) Start() {
 	server := &http.Server{
 		Addr:         s.cfg.Address,

@@ -1,4 +1,4 @@
-package api
+package handlers
 
 import (
 	"encoding/json"
@@ -10,6 +10,7 @@ const (
 	StatusErr = "ERROR"
 )
 
+// Response базовая структура все api ответов
 type Response struct {
 	Status string `json:"status"`
 	Error  string `json:"error,omitempty"`
@@ -23,13 +24,14 @@ func Err(err string) Response {
 	return Response{Status: StatusErr, Error: err}
 }
 
-func WriteResp(w http.ResponseWriter, data any, code int) {
+// WriteRespJson записывает результат в переданный ResponseWriter в формате json
+func WriteRespJson(w http.ResponseWriter, data any, code int) {
 	d, _ := json.Marshal(data)
 	w.WriteHeader(code)
 	write, err := w.Write(d)
 
 	if err != nil {
-		WriteResp(w, Err(err.Error()), http.StatusInternalServerError)
+		WriteRespJson(w, Err(err.Error()), http.StatusInternalServerError)
 		return
 	}
 
