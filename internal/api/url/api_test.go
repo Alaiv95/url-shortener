@@ -51,7 +51,7 @@ func TestAPI_Save(t *testing.T) {
 		t.Errorf("код неверен: получили %d, а хотели %d", rr.Code, http.StatusOK)
 	}
 
-	var resp UrlResp
+	var resp Resp
 	err := json.Unmarshal(rr.Body.Bytes(), &resp)
 	if err != nil {
 		t.Errorf("ошибка при десериализации ответа")
@@ -84,7 +84,7 @@ func TestAPI_Original(t *testing.T) {
 		t.Errorf("код неверен: получили %d, а хотели %d", rr.Code, http.StatusOK)
 	}
 
-	var resp UrlResp
+	var resp Resp
 	err = json.Unmarshal(rr.Body.Bytes(), &resp)
 	if err != nil {
 		t.Errorf("ошибка при десериализации ответа")

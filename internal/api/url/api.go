@@ -25,23 +25,23 @@ type SaveUrlReq struct {
 	Url string `json:"url" validate:"required,url"`
 }
 
-type UrlResp struct {
+type Resp struct {
 	api.Response
 	Url string `json:"url"`
 }
 
 func New(db storage.Storage, cfg *config.HttpServer, log *slog.Logger) *API {
-	api := &API{
+	a := &API{
 		Router: mux.NewRouter(),
 		db:     db,
 		cfg:    cfg,
 		log:    log,
 	}
 
-	api.Middlewares()
-	api.Endpoints()
+	a.Middlewares()
+	a.Endpoints()
 
-	return api
+	return a
 }
 
 func (a *API) Middlewares() {
@@ -91,7 +91,7 @@ func (a *API) Save(w http.ResponseWriter, r *http.Request) {
 }
 
 func responseOk(w http.ResponseWriter, url string, status int) {
-	r := UrlResp{
+	r := Resp{
 		Response: api.Ok(),
 		Url:      url,
 	}
