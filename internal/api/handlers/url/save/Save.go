@@ -1,12 +1,14 @@
 package save
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 	"urlShortener/internal/api/handlers"
 	"urlShortener/internal/api/handlers/url"
-	"urlShortener/internal/kafka"
 	"urlShortener/internal/lib/base62"
 	"urlShortener/internal/lib/numGen"
 )
@@ -21,8 +23,16 @@ type UrlSaver interface {
 	SaveUrl(origUrl string, shortUrl string) (string, error)
 }
 
+type Producer interface {
+	Produce(msgVal []byte, ctx context.Context)
+}
+
+type TimedSetter interface {
+	Set(key string, v any, time time.Duration) error
+}
+
 // New конструктор для иницализации хендлера сохранения ссылки
-func New(log *slog.Logger, saver UrlSaver, kf *kafka.Client) http.HandlerFunc {
+func New(log *slog.Logger, saver UrlSaver, kf Producer, domain string, cache TimedSetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req UrlReq
 
@@ -33,6 +43,8 @@ func New(log *slog.Logger, saver UrlSaver, kf *kafka.Client) http.HandlerFunc {
 			return
 		}
 
+		log.Info("Start saving short url for:  ", "url", req.Url)
+
 		slug := base62.ConvertNum(numGen.Generate())
 
 		resp, err := saver.SaveUrl(req.Url, slug)
@@ -42,8 +54,20 @@ func New(log *slog.Logger, saver UrlSaver, kf *kafka.Client) http.HandlerFunc {
 			return
 		}
 
-		url.ResponseOk(w, resp, http.StatusOK)
+		// form short url with current domain
+		shortUrl := fmt.Sprintf("%s/%s", domain, resp)
+		url.ResponseOk(w, shortUrl, http.StatusOK)
 
-		kf.Produce([]byte(resp), r.Context())
+		log.Info("Saved new short url: ", "original", req.Url, "short", shortUrl)
+
+		// produce message to kafka that url created
+		kf.Produce([]byte(shortUrl), r.Context())
+
+		// set url to cache for 12 hr
+		err = cache.Set(slug, req.Url, time.Hour*12)
+		if err != nil {
+			log.Error("Error saving url to cache", "err", err.Error())
+			return
+		}
 	}
 }

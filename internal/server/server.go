@@ -7,26 +7,34 @@ import (
 	"urlShortener/internal/api"
 	"urlShortener/internal/config"
 	"urlShortener/internal/kafka"
+	"urlShortener/internal/redis"
 	"urlShortener/internal/storage/memdb"
 )
 
 // Server структура сервера
 type Server struct {
-	api *api.API
-	cfg *config.HttpServer
-	log *slog.Logger
-	db  *memdb.Storage
-	kf  *kafka.Client
+	api   *api.API
+	cfg   *config.HttpServer
+	log   *slog.Logger
+	db    *memdb.Storage
+	kf    *kafka.Client
+	cache *redis.Client
 }
 
 // New конструктор иницализации сервера с его зависимостями
-func New(db *memdb.Storage, cfg *config.HttpServer, log *slog.Logger, kf *kafka.Client) *Server {
+func New(
+	db *memdb.Storage,
+	cfg *config.HttpServer,
+	log *slog.Logger,
+	kf *kafka.Client,
+	cache *redis.Client) *Server {
 	return &Server{
-		db:  db,
-		api: api.New(db, cfg, log, kf),
-		cfg: cfg,
-		log: log,
-		kf:  kf,
+		db:    db,
+		api:   api.New(db, cfg, log, kf, cache),
+		cfg:   cfg,
+		log:   log,
+		kf:    kf,
+		cache: cache,
 	}
 }
 

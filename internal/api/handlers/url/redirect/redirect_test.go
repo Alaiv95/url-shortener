@@ -1,6 +1,7 @@
 package redirect_test
 
 import (
+	"errors"
 	"github.com/gorilla/mux"
 	"log/slog"
 	"net/http"
@@ -16,6 +17,12 @@ import (
 var log *slog.Logger
 var getter redirect.UrlGetter
 var saver save.UrlSaver
+
+type DummyGetter struct{}
+
+func (d DummyGetter) Get(_ string) ([]byte, error) {
+	return nil, errors.New("dummy")
+}
 
 func TestMain(m *testing.M) {
 	cfg := config.Config{
@@ -48,7 +55,7 @@ func TestAPI_Original(t *testing.T) {
 		t.Errorf("ошибка при подготовке данных")
 	}
 
-	h := redirect.New(log, getter)
+	h := redirect.New(log, getter, DummyGetter{})
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/url/{slug}", nil)
 	req = mux.SetURLVars(req, map[string]string{

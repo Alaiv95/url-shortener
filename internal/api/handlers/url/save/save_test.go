@@ -2,12 +2,15 @@ package save_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
+	"time"
 	"urlShortener/internal/api/handlers/url"
 	"urlShortener/internal/api/handlers/url/save"
 	"urlShortener/internal/config"
@@ -17,6 +20,16 @@ import (
 var log *slog.Logger
 var saver save.UrlSaver
 var cfg config.Config
+
+const domain = "https://test.ru"
+
+type DummyProducer struct{}
+type DummySetter struct{}
+
+func (p DummyProducer) Produce(_ []byte, _ context.Context) {}
+func (s DummySetter) Set(_ string, _ any, _ time.Duration) error {
+	return nil
+}
 
 func TestMain(m *testing.M) {
 	cfg = config.Config{
@@ -42,7 +55,7 @@ func TestAPI_Save(t *testing.T) {
 		Url: "http://google.com",
 	}
 	payload, _ := json.Marshal(data)
-	h := save.New(log, saver)
+	h := save.New(log, saver, DummyProducer{}, domain, DummySetter{})
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/url", bytes.NewBuffer(payload))
 
@@ -61,5 +74,9 @@ func TestAPI_Save(t *testing.T) {
 
 	if err != nil || resp.Url == "" {
 		t.Errorf("url неверен: получили %s, а хотели %s", rr.Body, "?")
+	}
+
+	if !strings.Contains(resp.Url, domain) {
+		t.Errorf("url неверен: получили %s, а хотели %s", rr.Body, domain+"/?")
 	}
 }

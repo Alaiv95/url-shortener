@@ -11,6 +11,7 @@ type Config struct {
 	Env   string        `yaml:"env" env-default:"local"`
 	Http  HttpServer    `yaml:"http_server" env-required:"true"`
 	Kafka KafkaSettings `yaml:"kafka" env-required:"true"`
+	Redis RedisSettings `yaml:"redis" env-required:"true"`
 }
 
 type HttpServer struct {
@@ -22,6 +23,10 @@ type HttpServer struct {
 type KafkaSettings struct {
 	Address  string `yaml:"address" env-default:"localhost:29092"`
 	UrlTopic string `yaml:"url-topic" env-required:"true"`
+}
+
+type RedisSettings struct {
+	Addr string `yaml:"address" env-default:"localhost:6379"`
 }
 
 func MustLoad() *Config {

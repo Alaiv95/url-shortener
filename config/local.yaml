@@ -6,3 +6,5 @@ http_server:
 kafka:
   address: "localhost:29092"
   url-topic: "url-topic"
+redis:
+  address: "localhost:6379"

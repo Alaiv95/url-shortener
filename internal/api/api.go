@@ -8,6 +8,7 @@ import (
 	"urlShortener/internal/api/mw"
 	"urlShortener/internal/config"
 	"urlShortener/internal/kafka"
+	"urlShortener/internal/redis"
 	"urlShortener/internal/storage/memdb"
 )
 
@@ -17,16 +18,23 @@ type API struct {
 	log    *slog.Logger
 	db     *memdb.Storage
 	kf     *kafka.Client
+	cache  *redis.Client
 }
 
 // New конструктор для инициализации Api со всеми зависимостями
-func New(db *memdb.Storage, cfg *config.HttpServer, log *slog.Logger, kf *kafka.Client) *API {
+func New(
+	db *memdb.Storage,
+	cfg *config.HttpServer,
+	log *slog.Logger,
+	kf *kafka.Client,
+	cache *redis.Client) *API {
 	a := &API{
 		Router: mux.NewRouter(),
 		db:     db,
 		cfg:    cfg,
 		log:    log,
 		kf:     kf,
+		cache:  cache,
 	}
 
 	a.Middlewares()
@@ -42,6 +50,6 @@ func (a *API) Middlewares() {
 
 // Endpoints подключение всех хендлеров
 func (a *API) Endpoints() {
-	a.Router.Handle("/api/v1/url", save.New(a.log, a.db, a.kf)).Methods("POST")
-	a.Router.HandleFunc("/api/v1/url/{slug}", redirect.New(a.log, a.db)).Methods("GET")
+	a.Router.Handle("/api/v1/url", save.New(a.log, a.db, a.kf, a.cfg.Address, a.cache)).Methods("POST")
+	a.Router.HandleFunc("/api/v1/url/{slug}", redirect.New(a.log, a.db, a.cache)).Methods("GET")
 }

@@ -12,11 +12,13 @@ type Resp struct {
 }
 
 // ResponseOk формирует ответ и записывает результат в переданный http.ResponseWriter
-func ResponseOk(w http.ResponseWriter, url string, status int) {
+func ResponseOk(w http.ResponseWriter, url string, status int) Resp {
 	r := Resp{
 		Response: handlers.Ok(),
 		Url:      url,
 	}
 
 	handlers.WriteRespJson(w, r, status)
+
+	return r
 }

@@ -5,6 +5,7 @@ import (
 	"os"
 	"urlShortener/internal/config"
 	"urlShortener/internal/kafka"
+	"urlShortener/internal/redis"
 	"urlShortener/internal/server"
 	"urlShortener/internal/storage/memdb"
 )
@@ -30,7 +31,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	serv := server.New(storage, &cfg.Http, logger, kf)
+	logger.Debug("Kafka initialized")
+
+	cache := redis.New(&cfg.Redis)
+
+	logger.Debug("Redis initialized")
+
+	serv := server.New(storage, &cfg.Http, logger, kf, cache)
 	serv.Start()
 }
 
