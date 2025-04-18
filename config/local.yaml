@@ -3,3 +3,6 @@ http_server:
   address: "0.0.0.0:8081"
   timeout: 5s
   idle_timeout: 75s
+kafka:
+  address: "localhost:29092"
+  url-topic: "url-topic"

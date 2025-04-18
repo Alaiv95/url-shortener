@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"urlShortener/internal/api/handlers"
 	"urlShortener/internal/api/handlers/url"
+	"urlShortener/internal/kafka"
 	"urlShortener/internal/lib/base62"
 	"urlShortener/internal/lib/numGen"
 )
@@ -21,7 +22,7 @@ type UrlSaver interface {
 }
 
 // New конструктор для иницализации хендлера сохранения ссылки
-func New(log *slog.Logger, saver UrlSaver) http.HandlerFunc {
+func New(log *slog.Logger, saver UrlSaver, kf *kafka.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req UrlReq
 
@@ -42,5 +43,7 @@ func New(log *slog.Logger, saver UrlSaver) http.HandlerFunc {
 		}
 
 		url.ResponseOk(w, resp, http.StatusOK)
+
+		kf.Produce([]byte(resp), r.Context())
 	}
 }

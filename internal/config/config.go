@@ -8,14 +8,20 @@ import (
 )
 
 type Config struct {
-	Env  string     `yaml:"env" env-default:"local"`
-	Http HttpServer `yaml:"http_server" env-required:"true"`
+	Env   string        `yaml:"env" env-default:"local"`
+	Http  HttpServer    `yaml:"http_server" env-required:"true"`
+	Kafka KafkaSettings `yaml:"kafka" env-required:"true"`
 }
 
 type HttpServer struct {
 	Address     string        `yaml:"address" env-default:"localhost:8081"`
 	Timeout     time.Duration `yaml:"timeout" env-default:"5s"`
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"5s"`
+}
+
+type KafkaSettings struct {
+	Address  string `yaml:"address" env-default:"localhost:29092"`
+	UrlTopic string `yaml:"url-topic" env-required:"true"`
 }
 
 func MustLoad() *Config {

@@ -6,6 +6,7 @@ import (
 	"os"
 	"urlShortener/internal/api"
 	"urlShortener/internal/config"
+	"urlShortener/internal/kafka"
 	"urlShortener/internal/storage/memdb"
 )
 
@@ -15,15 +16,17 @@ type Server struct {
 	cfg *config.HttpServer
 	log *slog.Logger
 	db  *memdb.Storage
+	kf  *kafka.Client
 }
 
 // New конструктор иницализации сервера с его зависимостями
-func New(db *memdb.Storage, cfg *config.HttpServer, log *slog.Logger) *Server {
+func New(db *memdb.Storage, cfg *config.HttpServer, log *slog.Logger, kf *kafka.Client) *Server {
 	return &Server{
 		db:  db,
-		api: api.New(db, cfg, log),
+		api: api.New(db, cfg, log, kf),
 		cfg: cfg,
 		log: log,
+		kf:  kf,
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"os"
 	"urlShortener/internal/config"
+	"urlShortener/internal/kafka"
 	"urlShortener/internal/server"
 	"urlShortener/internal/storage/memdb"
 )
@@ -23,7 +24,13 @@ func main() {
 
 	logger.Debug("Storage initialized")
 
-	serv := server.New(storage, &cfg.Http, logger)
+	kf, err := kafka.New(cfg.Kafka.Address, cfg.Kafka.UrlTopic, logger)
+	if err != nil {
+		logger.Error("error initializing Kafka client")
+		os.Exit(1)
+	}
+
+	serv := server.New(storage, &cfg.Http, logger, kf)
 	serv.Start()
 }
 
