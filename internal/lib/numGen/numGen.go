@@ -1,16 +1,15 @@
 package numGen
 
-var (
-	start = 1
-	step  = 1
+import (
+	"math/rand"
+	"time"
 )
 
-// Generate временная функция генерации чисел для формирования коротких ссылок
+// Generate временная функция генерации чисел
 // todo заменить на postgres sequence или придумать что еще после миграции на БД
 // todo также за раз получать диапазон из 1-2 тысяч чисел и использовать его и когда числа кончатся, запросить новый диапазон
 func Generate() int {
-	currStart := start
-	start += step
+	rand.Seed(time.Now().UnixNano())
 
-	return currStart
+	return rand.Int()
 }

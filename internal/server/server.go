@@ -8,7 +8,7 @@ import (
 	"urlShortener/internal/config"
 	"urlShortener/internal/kafka"
 	"urlShortener/internal/redis"
-	"urlShortener/internal/storage/memdb"
+	"urlShortener/internal/storage/pg"
 )
 
 // Server структура сервера
@@ -16,14 +16,14 @@ type Server struct {
 	api   *api.API
 	cfg   *config.HttpServer
 	log   *slog.Logger
-	db    *memdb.Storage
+	db    *pg.Storage
 	kf    *kafka.Client
 	cache *redis.Client
 }
 
 // New конструктор иницализации сервера с его зависимостями
 func New(
-	db *memdb.Storage,
+	db *pg.Storage,
 	cfg *config.HttpServer,
 	log *slog.Logger,
 	kf *kafka.Client,

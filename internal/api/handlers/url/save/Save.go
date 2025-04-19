@@ -55,19 +55,20 @@ func New(log *slog.Logger, saver UrlSaver, kf Producer, domain string, cache Tim
 		}
 
 		// form short url with current domain
-		shortUrl := fmt.Sprintf("%s/%s", domain, resp)
+		shortUrl := fmt.Sprintf("%s/api/v1/url/%s", domain, resp)
 		url.ResponseOk(w, shortUrl, http.StatusOK)
 
 		log.Info("Saved new short url: ", "original", req.Url, "short", shortUrl)
 
-		// produce message to kafka that url created
-		kf.Produce([]byte(shortUrl), r.Context())
+		go func() {
+			// produce message to kafka that url created
+			kf.Produce([]byte(shortUrl), r.Context())
 
-		// set url to cache for 12 hr
-		err = cache.Set(slug, req.Url, time.Hour*12)
-		if err != nil {
-			log.Error("Error saving url to cache", "err", err.Error())
-			return
-		}
+			// set url to cache for 12 hr
+			err = cache.Set(slug, req.Url, time.Hour*12)
+			if err != nil {
+				log.Error("Error saving url to cache", "err", err.Error())
+			}
+		}()
 	}
 }

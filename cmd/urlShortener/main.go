@@ -7,7 +7,7 @@ import (
 	"urlShortener/internal/kafka"
 	"urlShortener/internal/redis"
 	"urlShortener/internal/server"
-	"urlShortener/internal/storage/memdb"
+	"urlShortener/internal/storage/pg"
 )
 
 const (
@@ -21,7 +21,11 @@ func main() {
 
 	logger.Debug("Config loaded and Logger enabled")
 
-	storage := memdb.New(cfg)
+	storage, err := pg.New(cfg.StoragePath)
+	if err != nil {
+		logger.Error("error initializing storage")
+		os.Exit(1)
+	}
 
 	logger.Debug("Storage initialized")
 

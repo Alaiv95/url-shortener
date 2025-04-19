@@ -1,6 +1,7 @@
 package redirect
 
 import (
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"log/slog"
 	"net/http"
@@ -25,7 +26,12 @@ func New(log *slog.Logger, db UrlGetter, getter Getter) http.HandlerFunc {
 		var origUrl string
 
 		if cached, err := getter.Get(shortUrl); err == nil {
-			origUrl = string(cached)
+			err = json.Unmarshal(cached, &origUrl)
+			if err != nil {
+				log.Error("Error parsing value from cache", "err", err.Error())
+				handlers.WriteRespJson(w, handlers.Err(err.Error()), http.StatusBadRequest)
+				return
+			}
 		} else {
 			origUrl, err = db.GetUrl(shortUrl)
 

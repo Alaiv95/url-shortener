@@ -9,21 +9,21 @@ import (
 	"urlShortener/internal/config"
 	"urlShortener/internal/kafka"
 	"urlShortener/internal/redis"
-	"urlShortener/internal/storage/memdb"
+	"urlShortener/internal/storage/pg"
 )
 
 type API struct {
 	Router *mux.Router
 	cfg    *config.HttpServer
 	log    *slog.Logger
-	db     *memdb.Storage
+	db     *pg.Storage
 	kf     *kafka.Client
 	cache  *redis.Client
 }
 
 // New конструктор для инициализации Api со всеми зависимостями
 func New(
-	db *memdb.Storage,
+	db *pg.Storage,
 	cfg *config.HttpServer,
 	log *slog.Logger,
 	kf *kafka.Client,

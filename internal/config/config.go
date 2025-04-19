@@ -8,10 +8,11 @@ import (
 )
 
 type Config struct {
-	Env   string        `yaml:"env" env-default:"local"`
-	Http  HttpServer    `yaml:"http_server" env-required:"true"`
-	Kafka KafkaSettings `yaml:"kafka" env-required:"true"`
-	Redis RedisSettings `yaml:"redis" env-required:"true"`
+	Env         string        `yaml:"env" env-default:"local"`
+	Http        HttpServer    `yaml:"http_server" env-required:"true"`
+	StoragePath string        `yaml:"storage_path" env-required:"true"`
+	Kafka       KafkaSettings `yaml:"kafka" env-required:"true"`
+	Redis       RedisSettings `yaml:"redis" env-required:"true"`
 }
 
 type HttpServer struct {
