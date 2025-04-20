@@ -4,7 +4,7 @@ WORKDIR /urlShortener
 
 COPY . .
 
-ENV CONFIG_PATH=/urlShortener/config/local.yaml
+ENV CONFIG_PATH=/urlShortener/config/prod.yaml
 
 WORKDIR /urlShortener/cmd/urlShortener
 RUN GOOS=linux go build -o urlShortener

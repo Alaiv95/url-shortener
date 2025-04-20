@@ -1,0 +1,11 @@
+env: "prod"
+storage_path: "user=postgres password=postgres host=main-db dbname=main sslmode=disable"
+http_server:
+  address: "0.0.0.0:8081"
+  timeout: 5s
+  idle_timeout: 75s
+kafka:
+  address: "kafka:29092"
+  url-topic: "url-topic"
+redis:
+  address: "redis:6379"
