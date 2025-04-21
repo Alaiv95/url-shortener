@@ -1,4 +1,4 @@
-package handlers
+package api
 
 import (
 	"encoding/json"
@@ -36,4 +36,16 @@ func WriteRespJson(w http.ResponseWriter, data any, code int) {
 	}
 
 	_ = write
+}
+
+// ResponseOk формирует ответ и записывает результат в переданный http.ResponseWriter
+func ResponseOk(w http.ResponseWriter, url string, status int) Resp {
+	r := Resp{
+		Response: Ok(),
+		Url:      url,
+	}
+
+	WriteRespJson(w, r, status)
+
+	return r
 }

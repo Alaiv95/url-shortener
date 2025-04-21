@@ -71,8 +71,8 @@ func (s *Storage) SaveUrl(origUrl string, shortUrl string) (string, error) {
 	return shortUrl, nil
 }
 
-// GetUrl получение оригинальной ссылки по короткой
-func (s *Storage) GetUrl(shortUrl string) (string, error) {
+// Url получение оригинальной ссылки по короткой
+func (s *Storage) Url(shortUrl string) (string, error) {
 	stmt, err := s.db.Prepare("SELECT url FROM url WHERE slug = ?")
 	if err != nil {
 		return "", err
