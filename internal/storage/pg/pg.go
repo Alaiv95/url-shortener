@@ -18,6 +18,7 @@ func New(path string) (*Storage, error) {
 	const op = "storage.pg.New"
 
 	db, err := sql.Open("postgres", path)
+
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

@@ -11,18 +11,15 @@ import (
 	"urlShortener/internal/kafka"
 	"urlShortener/internal/redis"
 	"urlShortener/internal/service"
-	"urlShortener/internal/service/url"
-	"urlShortener/internal/storage"
 )
 
 type API struct {
 	Router  *mux.Router
 	cfg     *config.HttpServer
 	log     *slog.Logger
-	db      storage.UrlRepo
 	kf      *kafka.Client
 	cache   *redis.Client
-	urlSrvc service.UrlService
+	service service.UrlService
 }
 
 // UrlReq структура запроса для сохранения новой ссылки
@@ -43,19 +40,18 @@ type UrlSaver interface {
 
 // New конструктор для инициализации Api со всеми зависимостями
 func New(
-	db storage.UrlRepo,
+	service service.UrlService,
 	cfg *config.HttpServer,
 	log *slog.Logger,
 	kf *kafka.Client,
 	cache *redis.Client) *API {
 	a := &API{
 		Router:  mux.NewRouter(),
-		db:      db,
 		cfg:     cfg,
 		log:     log,
 		kf:      kf,
 		cache:   cache,
-		urlSrvc: url.New(db, log, kf, cache, cache),
+		service: service,
 	}
 
 	a.Middlewares()
@@ -85,7 +81,7 @@ func (a *API) saveUrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := a.urlSrvc.SaveUrl(req.Url, a.cfg.Address, context.Background())
+	res, err := a.service.SaveUrl(req.Url, a.cfg.Address, context.Background())
 	if err != nil {
 		a.log.Error("Error saving new url", "error", err)
 		WriteRespJson(w, Err(err.Error()), http.StatusBadRequest)
@@ -101,7 +97,7 @@ func (a *API) redirect(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	shortUrl := vars["slug"]
 
-	origUrl, err := a.urlSrvc.Url(shortUrl, context.Background())
+	origUrl, err := a.service.Url(shortUrl, context.Background())
 	if err != nil {
 		a.log.Error("Error getting url", "error", err)
 		WriteRespJson(w, Err(err.Error()), http.StatusBadRequest)
